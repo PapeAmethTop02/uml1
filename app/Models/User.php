@@ -17,11 +17,21 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role'];
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isBlocked()
+    {
+        return $this->is_blocked;
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class); // Assure-toi que Order est bien le nom de ton modèle
+    }
 
     /**
      * The attributes that should be hidden for serialization.
