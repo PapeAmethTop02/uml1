@@ -8,6 +8,8 @@
         <thead class="bg-gray-100">
             <tr>
                 <th class="py-2 px-4 text-left">Client</th>
+                <th class="py-2 px-4 text-left">Email</th>
+                <th class="py-2 px-4 text-left">Téléphone</th>
                 <th class="py-2 px-4 text-left">Produits</th>
                 <th class="py-2 px-4 text-left">Total</th>
                 <th class="py-2 px-4 text-left">Statut</th>
@@ -18,13 +20,21 @@
         <tbody>
             @foreach ($orders as $order)
                 <tr class="border-b">
-                    <td class="py-2 px-4">{{ $order->user->name }}</td>
+                    <td class="py-2 px-4">{{ $order->client_prenom }} {{ $order->client_nom }}</td>
+                    <td class="py-2 px-4">{{ $order->client_email }}</td>
+                    <td class="py-2 px-4">{{ $order->client_telephone }}</td>
                     <td class="py-2 px-4">{{ $order->products->sum('pivot.quantity') }} produit(s)</td>
-                    <td class="py-2 px-4">{{ $order->total_price }} F CFA</td>
+                    <td class="py-2 px-4">{{ number_format($order->total_price, 2) }} F CFA</td>
                     <td class="py-2 px-4">
                         <span class="px-2 py-1 rounded text-white 
-                            {{ $order->status == 'en attente' ? 'bg-yellow-500' : ($order->status == 'payé' ? 'bg-blue-500' : 'bg-green-500') }}">
-                            {{ ucfirst($order->status) }}
+                            {{ $order->status == 'en attente' ? 'bg-yellow-500' : ($order->status == 'paye' ? 'bg-blue-500' : 'bg-green-500') }}">
+                            @if($order->status == 'en attente')
+                                En attente
+                            @elseif($order->status == 'paye')
+                                Payé
+                            @else
+                                Livré
+                            @endif
                         </span>
                     </td>
                     <td class="py-2 px-4">{{ $order->created_at->format('d/m/Y H:i') }}</td>

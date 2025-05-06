@@ -13,9 +13,20 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedTinyInteger('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->decimal('total_price', 10, 2);
-            $table->enum('status', ['en attente', 'payé', 'livré'])->default('en attente');
+            $table->enum('status', ['en attente', 'paye', 'livree'])->default('en attente');
+            
+            // Informations client
+            $table->string('client_nom');
+            $table->string('client_prenom');
+            $table->string('client_email');
+            $table->string('client_telephone');
+            $table->string('client_adresse');
+            $table->string('client_ville');
+            $table->string('client_code_postal');
+            
             $table->timestamps();
         });
     }

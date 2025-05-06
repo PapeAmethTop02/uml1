@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
@@ -36,9 +37,16 @@ class AuthController extends Controller
     protected function authenticated(Request $request, $user)
     {
         if ($user->role === 'admin') {
-            return redirect('/admin/dashboard'); // Redirige vers l'espace admin
+            return redirect('/admin/dashboard');
         }
-        return redirect('/dashboard'); // Redirige vers l'espace client
+
+        // Vérifier s'il y a une redirection en attente
+        if (Session::has('redirect_after_login')) {
+            $redirect = Session::pull('redirect_after_login');
+            return redirect()->route($redirect);
+        }
+
+        return redirect('/'); // Redirection par défaut vers la page d'accueil
     }
 
     // Gérer la déconnexion
@@ -69,7 +77,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => 'client' // Par défaut, un utilisateur est un client
+            'role' => 'client'
         ]);
 
         Auth::login($user);
@@ -79,11 +87,8 @@ class AuthController extends Controller
     public function profile()
     {
         if (Auth::check()) {
-            // Redirige l'utilisateur vers le tableau de bord
             return view('dashboard');
         }
-
-        // Si l'utilisateur n'est pas authentifié, on le redirige vers la page de connexion
         return redirect()->route('login');
     }
 }

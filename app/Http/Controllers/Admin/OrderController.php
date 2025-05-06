@@ -8,16 +8,17 @@ use App\Models\User;
 
 
 class OrderController extends Controller
-{public function index()
+{
+    public function index()
     {
-        $orders = Order::with('user', 'products')->latest()->paginate(10);
+        $orders = Order::with('products')->latest()->paginate(10);
         return view('admin.orders.index', compact('orders'));
     }
 
     // 📌 Voir les détails d'une commande
     public function show(Order $order)
     {
-        $order->load('user', 'products');
+        $order->load('products');
         return view('admin.orders.show', compact('order'));
     }
 
@@ -25,11 +26,10 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:en attente,payé,livrée'
+            'status' => 'required|in:en attente,paye,livree'
         ]);
 
-        $order->status = $request->status;
-        $order->save();
+        $order->update(['status' => $request->status]);
 
         return redirect()->back()->with('success', 'Statut mis à jour avec succès.');
     }

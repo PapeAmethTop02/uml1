@@ -4,77 +4,80 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Session;
-use App\Models\CartItem; // Ajoute cette ligne
-
 
 class CartController extends Controller
 {
     public function index()
     {
-        $cart = Session::get('cart', []); // Assurez-vous que $cart est toujours un tableau
+        $cart = Session::get('cart', []);
+        $total = 0;
         
-        if (!is_array($cart)) {
-            $cart = []; // Sécuriser contre les valeurs non attendues
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
         }
-        $cartItems = array_map(function($item) {
-            if (isset($item['id'], $item['name'], $item['price'], $item['quantity'])) {
-                return new CartItem(
-                    $item['id'],
-                    $item['name'],
-                    $item['price'],
-                    $item['quantity']
-                );
-            }
-    
-            // Si des données manquent, retourner null pour éviter des erreurs
-            return null;
-        }, $cart);
-        $cartItems = array_filter($cartItems);
-
-        $total = collect($cartItems)->sum(fn($item) => $item->price * $item->quantity);
-        return view('cart', compact('cartItems', 'total'));
+        
+        return view('cart', compact('cart', 'total'));
     }
 
     public function add(Request $request, $id)
-{
-    $product = Product::findOrFail($id);
-    $cart = Session::get('cart', []);
+    {
+        try {
+            $product = Product::findOrFail($id);
+            
+            if ($product->stock <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Le produit {$product->name} n'est plus en stock."
+                ]);
+            }
 
-    // Vérifier si le stock est suffisant
-    if (isset($cart[$id]) && $cart[$id]['quantity'] >= $product->stock) {
-        return response()->json([
-            'success' => false,
-            'message' => "Le stock de {$product->name} est insuffisant. Il ne reste que {$product->stock} en stock."
-        ]);
+            $cart = Session::get('cart', []);
+
+            if (isset($cart[$id])) {
+                if ($cart[$id]['quantity'] >= $product->stock) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Stock insuffisant pour {$product->name}. Il reste {$product->stock} unité(s)."
+                    ]);
+                }
+                $cart[$id]['quantity']++;
+            } else {
+                $cart[$id] = [
+                    'id' => $id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'quantity' => 1
+                ];
+            }
+
+            Session::put('cart', $cart);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Produit ajouté au panier !',
+                'cart_count' => array_sum(array_column($cart, 'quantity'))
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de l\'ajout au panier : ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de l\'ajout au panier.'
+            ], 500);
+        }
     }
-
-    // Ajouter le produit au panier (si stock suffisant)
-    if (isset($cart[$id])) {
-        $cart[$id]['quantity']++;
-    } else {
-        $cart[$id] = ['id' => $id, 'name' => $product->name, 'price' => $product->price, 'quantity' => 1];
-    }
-
-    // Sauvegarder le panier dans la session
-    Session::put('cart', $cart);
-
-    // Calculer le total du panier
-    $total = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Produit ajouté au panier !',
-        'total' => $total
-    ]);
-}
-
 
     public function remove($id)
     {
         $cart = Session::get('cart', []);
-        unset($cart[$id]);
-        Session::put('cart', $cart);
-        return redirect()->route('cart')->with('success', 'Produit retiré du panier !');
+        
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            Session::put('cart', $cart);
+            return redirect()->back()->with('success', 'Produit retiré du panier.');
+        }
+        
+        return redirect()->back()->with('error', 'Produit non trouvé dans le panier.');
     }
 }
 

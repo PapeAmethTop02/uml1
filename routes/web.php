@@ -19,13 +19,28 @@ use App\Http\Controllers\PaymentController;
 Route::get('/dashboard', function () {
     return redirect()->route('admin.dashboard');
 })->name('dashboard');
-// 🌍 Accueil et boutique (ouvert à tous)
+
+// Routes publiques (sans authentification)
 Route::get('/', [ProductController::class, 'index'])->name('home');
 Route::get('/produit/{id}', [ProductController::class, 'show'])->name('product.show');
 
+// Routes du panier (sans authentification)
+Route::get('/panier', [CartController::class, 'index'])->name('cart');
+Route::post('/panier/ajouter/{id}', [CartController::class, 'add'])->name('cart.add');
+Route::post('/panier/supprimer/{id}', [CartController::class, 'remove'])->name('cart.remove');
 
+// Routes de commande (sans authentification)
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/checkout/process', [CheckoutController::class, 'processCheckout'])->name('checkout.process');
+Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
 
-// 🔐 Authentification (Login / Register / Logout)
+// Suivi de commande (sans authentification)
+Route::get('/track-order', function() {
+    return view('orders.track-form');
+})->name('orders.track-form');
+Route::post('/track-order', [CheckoutController::class, 'trackOrder'])->name('orders.track');
+
+// Routes d'authentification
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
@@ -36,7 +51,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 // Middleware pour s'assurer que l'utilisateur est authentifié et non bloqué
-Route::middleware(['auth', BlockedUserMiddleware::class])->group(function () {
+/*Route::middleware(['auth', BlockedUserMiddleware::class])->group(function () {
 
     // 🏠 Page du compte utilisateur
     Route::get('/mon-compte', [AuthController::class, 'profile'])->name('profile');
@@ -46,7 +61,6 @@ Route::middleware(['auth', BlockedUserMiddleware::class])->group(function () {
     // 🛒 Gestion du panier
     Route::get('/panier', [CartController::class, 'index'])->name('cart'); // Voir le panier
     Route::post('/panier/ajouter/{id}', [CartController::class, 'add'])->name('cart.add'); // Ajouter un produit
-    Route::post('/panier/supprimer/{id}', [CartController::class, 'destroy'])->name('cart.destroy'); // Supprimer un produit
     Route::post('/panier/mettre-a-jour/{id}', [CartController::class, 'update'])->name('cart.update'); // Modifier quantité
     Route::post('/panier/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 
@@ -60,7 +74,7 @@ Route::get('/commandes/{id}', [OrderController::class, 'show'])->name('orders.sh
 // 🛒 Checkout (Passage en caisse)
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 });
-
+*/
 
 // 🔑 Espace Admin (Protégé par "auth" + "AdminMiddleware")
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
@@ -86,3 +100,6 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
 
 
 });
+
+// Routes pour le suivi de commande
+Route::post('/orders/track', [App\Http\Controllers\CheckoutController::class, 'trackOrder'])->name('orders.track');
