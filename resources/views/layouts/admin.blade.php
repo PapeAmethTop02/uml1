@@ -15,7 +15,7 @@
                 <a href="{{ route('admin.products.index') }}" class="hover:underline">Produits</a>
                 <a href="{{ route('admin.stock.manage') }}" class="hover:underline">Stocks</a>
                 <a href="{{ route('admin.orders.index') }}" class="hover:underline">Commandes</a>
-                <a href="{{ route('admin.users.index') }}" class="hover:underline">Utilisateurs</a>
+                
                 <!-- Bouton de déconnexion -->
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf

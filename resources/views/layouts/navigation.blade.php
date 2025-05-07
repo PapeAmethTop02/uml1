@@ -33,17 +33,11 @@
                             <x-nav-link :href="route('admin.orders.index')" :active="request()->routeIs('admin.orders.*')">
                                 {{ __('Gérer les Commandes') }}
                             </x-nav-link>
-                            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                                {{ __('Gérer les Utilisateurs') }}
-                            </x-nav-link>
+                            
                         @endif
 
-                        <!-- Si l'utilisateur est client -->
-                        @if(Auth::user()->role === 'client')
-                            <x-nav-link :href="route('orders')" :active="request()->routeIs('orders')">
-                                {{ __('Mes Commandes') }}
-                            </x-nav-link>
-                        @endif
+                        
+                        
                     @endauth
                 </div>
             </div>
@@ -73,7 +67,7 @@
                     </div>
                 @else
                     <a href="{{ route('login') }}" class="text-sm text-gray-700 underline">Se connecter</a>
-                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 underline">S'inscrire</a>
+                    
                 @endauth
             </div>
 
@@ -111,16 +105,11 @@
                     <x-responsive-nav-link :href="route('admin.orders.index')" :active="request()->routeIs('admin.orders.*')">
                         {{ __('Gérer les Commandes') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                        {{ __('Gérer les Utilisateurs') }}
-                    </x-responsive-nav-link>
+                    
                 @endif
 
-                @if(Auth::user()->role === 'client')
-                    <x-responsive-nav-link :href="route('orders')" :active="request()->routeIs('orders')">
-                        {{ __('Mes Commandes') }}
-                    </x-responsive-nav-link>
-                @endif
+                
+                
             @endauth
         </div>
 
@@ -145,7 +134,7 @@
             @else
                 <div class="px-4 py-2">
                     <a href="{{ route('login') }}" class="text-sm text-gray-700">Se connecter</a>
-                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700">S'inscrire</a>
+                    
                 </div>
             @endauth
         </div>
